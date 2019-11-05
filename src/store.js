@@ -7,24 +7,18 @@ export default new Vuex.Store({
   state: {
     columns: [
       {
-        priority: 0.6,
-        data: ["1", "2"],
+        priority: 1,
+        data: [],
         decl: []
       },
       {
-        priority: 0.7,
-        data: ["3", "4", "5"],
-        decl: [
-          {
-            column: 2,
-            word: "слово",
-            form: "словоформа"
-          }
-        ]
+        priority: 1,
+        data: [],
+        decl: []
       },
       {
-        priority: 0.8,
-        data: ["6", "7", "8", "9"],
+        priority: 1,
+        data: [],
         decl: []
       }
     ]
@@ -78,19 +72,36 @@ export default new Vuex.Store({
     SETUP_EXAMPLE: function (state, payload) {
       state.columns = [
         {
-          priority: 0.8,
-          data: ["Купить", "Заказать", "Магазин"],
+          priority: 0.7,
+          data: ["", "купить", "заказать", "магазин", "цены на"],
           decl: []
         },
         {
-          priority: 0.9,
-          data: ["", "пластиковые", "деревянные"],
+          priority: 0.2,
+          data: ["", "серые", "коричневые", "черные"],
           decl: []
+        },
+        {
+          priority: 0.8,
+          data: ["пластиковые", "деревянные", "оловянные", "алюминиевые", "мифриловые", "легендарыне"],
+          decl: [
+            {
+              col: 0,
+              word: "магазин",
+              form: "пластиковых"
+            }
+          ]
         },
         {
           priority: 1.0,
-          data: ["окна"],
-          decl: []
+          data: ["окна", "двери", "заборы", "лестницы", "ножницы", "столы", "стулья"],
+          decl: [
+            {
+              col: 0,
+              word: "магазин",
+              form: "окон"
+            }
+          ]
         },
         {
           priority: 0.5,
@@ -103,8 +114,13 @@ export default new Vuex.Store({
           decl: []
         },
         {
+          priority: 0.9,
+          data: ["", "в Москве", "в Подольске", "в Серпухове", "в Клину", "в Химках", "в Пушкине", "в Сергиевом Посаде", "в Щербинке"],
+          decl: []
+        },
+        {
           priority: 0.4,
-          data: ["", "в Москве"],
+          data: ["", "сегодня", "срочно"],
           decl: []
         }
       ];

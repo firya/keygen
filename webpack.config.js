@@ -14,7 +14,7 @@ module.exports = {
   output: {
     publicPath: ``,
     path: path.resolve(__dirname, `dist`),
-    filename: 'js/scripts.js',
+    filename: 'static/js/scripts.js',
   },
   module: {
     rules: [
@@ -120,7 +120,7 @@ module.exports = {
       notify: false,
     }),
     new MiniCssExtractPlugin({
-      filename: "css/styles.css",
+      filename: "static/css/styles.css",
     }),
     new VueLoaderPlugin()
   ],

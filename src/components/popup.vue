@@ -14,7 +14,9 @@
               <option v-for="n in 11" v-bind:key="n">{{(n-1)/10}}</option>
             </select>
           </label>
-          <p>Склонение слов в заголовках</p>
+          <p>
+            <b>Склонение слов в заголовках</b>
+          </p>
           <div class="row" v-for="(row, i) in columns[id].decl" v-bind:key="i">
             <div class="col">
               <label>

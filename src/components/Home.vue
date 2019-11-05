@@ -10,7 +10,7 @@
       >Очистить данные</a>
     </p>
     <div class="x-scroll">
-      <div class="x-scroll__column" v-for="(column, index) in columns">
+      <div class="x-scroll__column" v-for="(column, index) in columns" v-bind:key="index">
         <Column v-bind:id="index" v-on:openPopup="openPopup" />
       </div>
       <div class="x-scroll__add">
@@ -27,26 +27,38 @@
         >Дополнительные параметры</a>
       </div>
       <div class="accordeon__content" v-show="accordeonOpen">
-        <Checkbox v-model="props.plus">
-          Доавить «+» к стоп-словам
+        <Checkbox v-model="props.maxKeyLength">
+          Максимальная длина ключа 7 слов
           <Tooltip></Tooltip>
         </Checkbox>
-        <Checkbox v-model="props.quotes">
+        <Checkbox v-model="props.plus">
+          Добавить «+» к стоп-словам
+          <Tooltip></Tooltip>
+        </Checkbox>
+        <!-- <Checkbox v-model="props.quotes">
           Заключить в ""
           <Tooltip></Tooltip>
         </Checkbox>
         <Checkbox v-model="props.bracets">
           Заключить в []
           <Tooltip></Tooltip>
-        </Checkbox>
+        </Checkbox>-->
         <Checkbox v-model="props.cluster">
           Кластеризовать
           <Tooltip></Tooltip>
         </Checkbox>
         <div v-if="props.cluster">
           <div class="padding-block">
+            <a href="#" class="gray dashed" v-on:click="setHeaders($event, 'direct')">Яндекс.Директ</a>&nbsp;&nbsp;&nbsp;
+            <a
+              href="#"
+              class="gray dashed"
+              v-on:click="setHeaders($event, 'ads')"
+            >Google Ads</a>
+          </div>
+          <div class="padding-block">
             <label>
-              Количество класетров
+              Максимальное количество класетров
               <input
                 type="text"
                 class="input"
@@ -57,20 +69,38 @@
           <div class="padding-block">
             <label>
               Длина заголовка №1
-              <input type="text" class="input" v-model.number="props.header1" />
+              <input type="text" class="input" v-model.number="props.headers[0]" />
             </label>
           </div>
           <div class="padding-block">
             <label>
               Длина заголовка №2
-              <input type="text" class="input" v-model.number="props.header2" />
+              <input type="text" class="input" v-model.number="props.headers[1]" />
+            </label>
+          </div>
+          <div class="padding-block">
+            <label>
+              Длина заголовка №3
+              <input type="text" class="input" v-model.number="props.headers[2]" />
             </label>
           </div>
         </div>
       </div>
     </div>
     <p v-bind:class="{ error: isCartesianLimit }">Число фраз: {{cartesianSum}}/{{cartesianLimit}}</p>
-    <button class="button button--rounded button--pink" v-on:click="generate">Сгенерировать</button>
+    <button class="button button--rounded button--pink" v-on:click="generate">Генерировать</button>
+    <p v-if="result.keywords">
+      <textarea rows="10" cols="100" class="result">{{result.keywords.join("\n")}}</textarea>
+    </p>
+    <table v-if="result.groups">
+      <template v-for="(group, i) in result.groups">
+        <tr v-for="(keyword, j) in group.keywords" v-bind:key="j">
+          <td>Группа №{{(i+1)}}</td>
+          <td v-for="(header, k) in group.headers" v-bind:key="k">{{header}}</td>
+          <td>{{keyword}}</td>
+        </tr>
+      </template>
+    </table>
     <Popup
       v-if="popup != null"
       v-bind:id="popup"
@@ -100,17 +130,18 @@ export default {
   data() {
     return {
       props: {
+        maxKeyLength: true,
         plus: true,
         quotes: false,
         bracets: false,
-        cluster: false,
+        cluster: true,
         clusterCount: 200,
-        header1: 35,
-        header2: 30
+        headers: [35, 30, 0]
       },
       cartesianLimit: 100000,
       accordeonOpen: true,
-      popup: null
+      popup: null,
+      result: []
     };
   },
   computed: {
@@ -128,6 +159,9 @@ export default {
       return this.cartesianSum > this.cartesianLimit;
     },
     ...mapState(["columns"])
+  },
+  created() {
+    this.$store.commit("SETUP_EXAMPLE");
   },
   methods: {
     addColumn: function(e) {
@@ -166,6 +200,14 @@ export default {
     closePopup: function(column) {
       this.popup = null;
     },
+    setHeaders: function(e, type) {
+      e.preventDefault();
+      if (type == "direct") {
+        this.props.headers = [35, 30, 0];
+      } else if (type == "ads") {
+        this.props.headers = [30, 30, 30];
+      }
+    },
     generate: function(e) {
       e.preventDefault();
       if (this.isCartesianLimit) {
@@ -175,13 +217,14 @@ export default {
             " штук"
         );
       } else {
+        var that = this;
         axios
-          .post("/generate", {
+          .post("/api/v1.0/generate", {
             columns: this.columns,
             props: this.props
           })
           .then(function(response) {
-            console.log(response);
+            that.result = response.data;
           })
           .catch(function(error) {
             console.log(error);
