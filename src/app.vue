@@ -44,7 +44,7 @@ a {
 .page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 16px 20px;
 }
 .header {
   padding: 20px 0;

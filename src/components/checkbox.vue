@@ -65,7 +65,7 @@ export default {
   top: -2px;
 }
 .checkbox__label {
-  display: inline-block;
+  display: inline;
   vertical-align: middle;
 }
 </style>

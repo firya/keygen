@@ -59,7 +59,7 @@
           </p>
 
           <p class="text-right small">
-            <a href="#" class="dashed red" v-on:click="$emit('removeColumn')">Удалить колонку</a>
+            <a href="#" class="dashed red" v-on:click="$emit('removeColumn', id)">Удалить колонку</a>
           </p>
         </div>
       </div>

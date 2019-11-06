@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <p>Перемножение ключевых фраз с возможностью кластеризации по заголовкам для Яндекс.Директ</p>
+    <p>Перемножение ключевых фраз с возможностью кластеризации по заголовкам для Яндекс.Директ и Google Ads</p>
     <p>
       <a href="#" class="gray small dashed" v-on:click="setupDefault">Заполнить тестовыми данными</a>&nbsp;&nbsp;&nbsp;&nbsp;
       <a
@@ -29,11 +29,11 @@
       <div class="accordeon__content" v-show="accordeonOpen">
         <Checkbox v-model="props.maxKeyLength">
           Максимальная длина ключа 7 слов
-          <Tooltip></Tooltip>
+          <Tooltip>Исключает из результатов ключевые слова длиннее 7 слов (такие слова не пропускает Яндекс.Директ в рекламные кампании)</Tooltip>
         </Checkbox>
         <Checkbox v-model="props.plus">
           Добавить «+» к стоп-словам
-          <Tooltip></Tooltip>
+          <Tooltip>Предлоги и другие стоп-слова будут выделены символом + перед ними (например "Погода в Москве" будет изменено на "Погода +в Москве")</Tooltip>
         </Checkbox>
         <!-- <Checkbox v-model="props.quotes">
           Заключить в ""
@@ -45,7 +45,7 @@
         </Checkbox>-->
         <Checkbox v-model="props.cluster">
           Кластеризовать
-          <Tooltip></Tooltip>
+          <Tooltip>Объединяет все сгенерированные ключевые слова в заданное число групп. Генерирует заголовки исходя из заданной длины и приоритета сстолбцов</Tooltip>
         </Checkbox>
         <div v-if="props.cluster">
           <div class="padding-block">
@@ -58,7 +58,7 @@
           </div>
           <div class="padding-block">
             <label>
-              Максимальное количество класетров
+              Максимальное количество групп
               <input
                 type="text"
                 class="input"
@@ -88,19 +88,39 @@
       </div>
     </div>
     <p v-bind:class="{ error: isCartesianLimit }">Число фраз: {{cartesianSum}}/{{cartesianLimit}}</p>
-    <button class="button button--rounded button--pink" v-on:click="generate">Генерировать</button>
-    <p v-if="result.keywords">
-      <textarea rows="10" cols="100" class="result">{{result.keywords.join("\n")}}</textarea>
+    <p>
+      <button
+        class="button button--rounded button--pink"
+        v-bind:class="{ loading: loading }"
+        v-on:click="generate"
+      >Генерировать</button>
     </p>
-    <table v-if="result.groups">
-      <template v-for="(group, i) in result.groups">
-        <tr v-for="(keyword, j) in group.keywords" v-bind:key="j">
-          <td>Группа №{{(i+1)}}</td>
-          <td v-for="(header, k) in group.headers" v-bind:key="k">{{header}}</td>
-          <td>{{keyword}}</td>
-        </tr>
-      </template>
-    </table>
+    <div v-if="result.keywords">
+      <h2>Рузльтат</h2>
+      <p>
+        <span
+          class="copy"
+          v-on:click="copyTable($event, 'result_area')"
+        >скопировать результат в буфер обмена</span>
+      </p>
+      <textarea class="textarea" id="result_area">{{result.keywords.join("\n")}}</textarea>
+    </div>
+    <div v-if="result.table">
+      <h2>Рузльтат: {{result.num_groups}} групп, {{result.table.length}} ключей</h2>
+      <p>
+        <span
+          class="copy"
+          v-on:click="copyTable($event, 'result_table')"
+        >скопировать результат в буфер обмена</span>
+      </p>
+      <div class="x-scroll">
+        <table v-if="result.table" class="table" id="result_table">
+          <tr v-for="(row, i) in result.table">
+            <td v-for="(td, j) in row">{{td}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
     <Popup
       v-if="popup != null"
       v-bind:id="popup"
@@ -131,7 +151,7 @@ export default {
     return {
       props: {
         maxKeyLength: true,
-        plus: true,
+        plus: false,
         quotes: false,
         bracets: false,
         cluster: true,
@@ -141,6 +161,7 @@ export default {
       cartesianLimit: 100000,
       accordeonOpen: true,
       popup: null,
+      loading: false,
       result: []
     };
   },
@@ -164,6 +185,30 @@ export default {
     this.$store.commit("SETUP_EXAMPLE");
   },
   methods: {
+    copyTable: function(e, id) {
+      e.preventDefault();
+
+      var el = document.getElementById(id);
+
+      var target = e.target;
+
+      var text = el.innerText ? el.innerText : el.value;
+
+      navigator.clipboard.writeText(text).then(
+        function() {
+          target.classList.add("is-success");
+          setTimeout(function() {
+            target.classList.remove("is-success");
+          }, 1000);
+        },
+        function(err) {
+          target.classList.add("is-error");
+          setTimeout(function() {
+            target.classList.remove("is-error");
+          }, 1000);
+        }
+      );
+    },
     addColumn: function(e) {
       e.preventDefault();
 
@@ -184,6 +229,7 @@ export default {
       }
     },
     removeColumn: function(column) {
+      console.log(column);
       var isConfirm = confirm("Вы уверены что хотите удалить эту колонку?");
       if (isConfirm) {
         this.$store.commit("REMOVE_COLUMN", column);
@@ -218,17 +264,23 @@ export default {
         );
       } else {
         var that = this;
-        axios
-          .post("/api/v1.0/generate", {
-            columns: this.columns,
-            props: this.props
-          })
-          .then(function(response) {
-            that.result = response.data;
-          })
-          .catch(function(error) {
-            console.log(error);
-          });
+        if (!this.loading) {
+          this.result = [];
+          this.loading = true;
+
+          axios
+            .post("/api/v1.0/generate", {
+              columns: this.columns,
+              props: this.props
+            })
+            .then(function(response) {
+              that.loading = false;
+              that.result = response.data;
+            })
+            .catch(function(error) {
+              console.log(error);
+            });
+        }
       }
     }
   }
@@ -245,6 +297,84 @@ export default {
 .small {
   font-size: 14px;
 }
+.copy {
+  font-size: 14px;
+  vertical-align: baseline;
+  font-weight: normal;
+  cursor: pointer;
+  color: #267aff;
+  text-decoration: underline;
+  display: block;
+
+  &.is-success,
+  &.is-error {
+    &:after {
+      content: "Успешно скопировано";
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      pointer-events: none;
+      max-width: 80vw;
+      transform: translate(-50%, -50%);
+      display: block;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 5px;
+      padding: 10px 20px;
+      text-align: center;
+      color: #fff;
+      animation: flowUp 1s forwards;
+      z-index: 100;
+    }
+  }
+
+  &.is-error {
+    &:after {
+      content: "Не получилось, попробуй руками";
+    }
+  }
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &:active {
+    color: #1559c5;
+  }
+
+  &:before {
+    content: "";
+    width: 20px;
+    height: 24px;
+    margin-right: 4px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    vertical-align: middle;
+    display: inline-block;
+    background-size: contain;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' viewBox='0 0 100 125' style='enable-background:new 0 0 100 100;' xml:space='preserve'%3E%3Cg%3E%3Cpath d='M36,38h20c1.1,0,2-0.9,2-2s-0.9-2-2-2H36c-1.1,0-2,0.9-2,2S34.9,38,36,38z'/%3E%3Cpath d='M36,48h20c1.1,0,2-0.9,2-2s-0.9-2-2-2H36c-1.1,0-2,0.9-2,2S34.9,48,36,48z'/%3E%3Cpath d='M36,58h20c1.1,0,2-0.9,2-2s-0.9-2-2-2H36c-1.1,0-2,0.9-2,2S34.9,58,36,58z'/%3E%3Cpath d='M36,68h20c1.1,0,2-0.9,2-2s-0.9-2-2-2H36c-1.1,0-2,0.9-2,2S34.9,68,36,68z'/%3E%3Cpath d='M27.09,80h37.82c2.81,0,5.09-2.28,5.09-5.09V27.09c0-2.81-2.28-5.09-5.09-5.09H27.09C24.28,22,22,24.28,22,27.09v47.82 C22,77.72,24.28,80,27.09,80z M26,27.09c0-0.6,0.49-1.09,1.09-1.09h37.82c0.6,0,1.09,0.49,1.09,1.09v47.82 c0,0.6-0.49,1.09-1.09,1.09H27.09c-0.6,0-1.09-0.49-1.09-1.09V27.09z'/%3E%3Cpath d='M74.91,12H37.09C34.28,12,32,14.28,32,17.09c0,1.1,0.9,2,2,2s2-0.9,2-2c0-0.6,0.49-1.09,1.09-1.09h37.82 c0.6,0,1.09,0.49,1.09,1.09v47.82c0,0.6-0.49,1.09-1.09,1.09c-1.1,0-2,0.9-2,2s0.9,2,2,2c2.81,0,5.09-2.28,5.09-5.09V17.09 C80,14.28,77.72,12,74.91,12z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@keyframes flowUp {
+  0% {
+    opacity: 0;
+    margin-top: 50px;
+  }
+  20% {
+    opacity: 1;
+    margin-top: 0px;
+  }
+
+  80% {
+    opacity: 1;
+    margin-top: 0px;
+  }
+  100% {
+    opacity: 0;
+    margin-top: -50px;
+  }
+}
+
 .dashed {
   text-decoration: none !important;
   border-bottom: 0.5px dashed;
@@ -253,6 +383,11 @@ export default {
   &:hover {
     border-bottom-color: transparent;
   }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 400px;
 }
 .x-scroll {
   overflow-x: auto;
@@ -333,5 +468,46 @@ export default {
   min-width: 40px;
   width: 60px;
   vertical-align: middle;
+}
+.table {
+  position: relative;
+  border-collapse: collapse;
+  padding: 0;
+  border: 1px solid #ccc;
+  counter-reset: rows;
+  margin-left: 40px;
+
+  & tr {
+    position: relative;
+
+    &:not(:first-child) {
+      counter-increment: rows;
+    }
+
+    &:first-child:before {
+      content: "";
+    }
+
+    &:not(:first-child):before {
+      content: counter(rows);
+      display: block;
+      position: absolute;
+      left: -30px;
+      line-height: 17px;
+      text-align: right;
+      font-size: 10px;
+      width: 40px;
+      padding: 3px 6px;
+      box-sizing: border-box;
+      color: #999;
+    }
+  }
+
+  & td {
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    white-space: nowrap;
+    font-size: 14px;
+  }
 }
 </style>

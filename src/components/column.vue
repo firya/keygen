@@ -118,5 +118,30 @@ export default {
     background-color: #ff5c9b;
     border-color: #ff5c9b;
   }
+  &.loading {
+    cursor: default;
+
+    &:after {
+      content: "";
+      display: inline-block;
+      border-radius: 100%;
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-left-color: transparent;
+      vertical-align: middle;
+      margin-left: 10px;
+      animation: rotate 1s infinite;
+    }
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(-360deg);
+  }
+  20% {
+    transform: rotate(-360deg);
+  }
 }
 </style>

@@ -50,6 +50,8 @@ export default {
   padding: 4px 8px;
   left: 16px;
   top: 50%;
+  font-size: 14px;
+  width: 200px;
   transform: translateY(-50%);
   color: #fff;
   margin-left: 8px;

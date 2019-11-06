@@ -28,7 +28,8 @@ class Generator:
         result = {}
 
         if self.props['cluster']:
-            result['groups'] = self.clusterisation(cartesian)
+            # result['table'] = self.clusterisation(cartesian)
+            result = self.groups_to_table(self.clusterisation(cartesian))
         else:
             keywords = []
             for row in cartesian:
@@ -117,6 +118,9 @@ class Generator:
                 
                 if not default_group:
                     group_headers = group_headers + self.genereate_other_headers(group_keywords, group_headers)
+                else:
+                    for i in range(len(group_headers), len(self.props['headers'])):
+                        group_headers.append("")
                 
                 for header in group_headers:
                     new_group['headers'].append(self.format_result(self.match_words(header)))
@@ -127,6 +131,35 @@ class Generator:
                 new_groups.append(new_group)
 
         return new_groups
+
+    def groups_to_table(self, groups):
+        table = []
+
+        row = ["Группа", "Ключевое слово"]
+        for i in range(len(self.props['headers'])):
+            if self.props['headers'][i] > 0:
+                row.append(f"Заголовок {(i+1)}")
+
+        table.append(row)
+
+        for i, group in enumerate(groups):
+            for keyword in group['keywords']:
+                row = []
+
+                row.append(f"Группа №{i+1}")
+
+                row.append(keyword)
+
+                for j, header in enumerate(group['headers']):
+                    if self.props['headers'][j] > 0:
+                        row.append(header)
+
+                table.append(row)
+
+        return {
+            "table": table,
+            "num_groups": len(groups)
+        }
 
     def genereate_other_headers(self, keywords, headers):
         result = []
@@ -227,7 +260,7 @@ class Generator:
         for i, column in enumerate(self.columns):
             priority.append([i, column['priority']])
 
-        priority = sorted(priority, key=lambda p: p[1], reverse=True)
+        priority = sorted(priority, key=lambda p: float(p[1]), reverse=True)
 
         self.priority_list = priority
 
