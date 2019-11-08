@@ -156,7 +156,8 @@ export default {
         bracets: false,
         cluster: true,
         clusterCount: 200,
-        headers: [35, 30, 0]
+        headers: [35, 30, 0],
+        match_words: true
       },
       cartesianLimit: 100000,
       accordeonOpen: true,
@@ -278,7 +279,7 @@ export default {
               that.result = response.data;
             })
             .catch(function(error) {
-              console.log(error);
+              that.loading = false;
             });
         }
       }
@@ -492,7 +493,7 @@ export default {
       content: counter(rows);
       display: block;
       position: absolute;
-      left: -30px;
+      left: -40px;
       line-height: 17px;
       text-align: right;
       font-size: 10px;

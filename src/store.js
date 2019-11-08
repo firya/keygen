@@ -153,6 +153,7 @@ export default new Vuex.Store({
         {
           priority: 0.6,
           data: [
+            "",
             "с доставкой",
             "с установкой",
             "с доставкой и установкой",

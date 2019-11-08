@@ -23,12 +23,13 @@ class Generator:
     def generate(self):
         start_time = time.time()
         cartesian = self.cartesian_product()
-        self.find_match_words()
+
+        if self.props['match_words']:
+            self.find_match_words()
         
         result = {}
 
         if self.props['cluster']:
-            # result['table'] = self.clusterisation(cartesian)
             result = self.groups_to_table(self.clusterisation(cartesian))
         else:
             keywords = []
@@ -54,13 +55,13 @@ class Generator:
         self.cluster_iteration = self.cluster_iteration + 1
 
         groups = []
-        defailt_group = []
+        default_group = []
 
         self.get_priority_list()
 
         for i, el in enumerate(cartesian):
             if self.count_length(el) <= self.props['headers'][0]:
-                defailt_group.append({
+                default_group.append({
                     "keyword": el,
                     "headers": [[] for i in range(num_headers)]
                 })
@@ -68,22 +69,25 @@ class Generator:
                 headers = []
                 for i in range(0, num_headers):
                     headers.append(self.generate_header(el, self.priority_list, h1_len, self.merge_lists(headers)))
-
-                group_n = self.find_group(groups, headers, num_headers)
                 
-                # Перегенерировать кластеры с меньшей длиной первого заголовка
-                if group_n >= max_cluster_count - 1 and i != len(cartesian) - 1 and num_headers == 1:
-                    return self.clusterisation(cartesian, h1_len - 1)
+                if len(groups) > max_cluster_count:
+                    group_n = self.find_group(groups, headers, num_headers)
+                else:
+                    group_n = len(groups)
+                    
+                    # Перегенерировать кластеры с меньшей длиной первого заголовка
+                    if group_n >= max_cluster_count - 1 and i != len(cartesian) - 1 and num_headers == 1:
+                        return self.clusterisation(cartesian, h1_len - 1)
 
                 if group_n >= len(groups):
-                    groups.insert(group_n, [])
+                        groups.insert(group_n, [])
 
                 groups[group_n].append({
                     "keyword": el,
                     "headers": headers
                 })
 
-        groups.insert(0, defailt_group)
+        groups.insert(0, default_group)
 
         groups = self.format_groups(groups, num_headers)
 
@@ -123,10 +127,16 @@ class Generator:
                         group_headers.append("")
                 
                 for header in group_headers:
-                    new_group['headers'].append(self.format_result(self.match_words(header)))
+                    if self.props['match_words']:
+                        new_group['headers'].append(self.format_result(self.match_words(header)))
+                    else:
+                        new_group['headers'].append(self.format_result(header))
 
                 for keyword in group_keywords:
-                    new_group['keywords'].append(self.format_result(self.match_words(keyword), True))
+                    if self.props['match_words']:
+                        new_group['keywords'].append(self.format_result(self.match_words(keyword), True))
+                    else:
+                        new_group['keywords'].append(self.format_result(keyword, True))
 
                 new_groups.append(new_group)
 
@@ -220,11 +230,12 @@ class Generator:
                 if (len(exclude) == 0) or (len(exclude) > 0 and exclude[priority_item[0]] == ''):
                     header[priority_item[0]] = words[priority_item[0]]
 
-        header_matched = self.match_words(header)
-        header_len = self.count_length(header_matched)
+        if self.props['match_words']:
+            header_matched = self.match_words(header)
+            header_len = self.count_length(header_matched)
 
-        if header_len > max_length:
-            self.generate_header(words, priority, max_length - 1, exclude)
+            if header_len > max_length:
+                self.generate_header(words, priority, max_length - 1, exclude)
 
         return header
 
