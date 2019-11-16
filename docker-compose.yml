@@ -3,13 +3,17 @@ services:
   keygen_app:
     container_name: keygen_app
     build: ./dist
-    networks:
-      nginx_net:
+    ports:
+      - 8080:5000
     environment:
       - NODE_ENV=production
+      - VIRTUAL_HOST=$VIRTUAL_HOST
+      - LETSENCRYPT_HOST=$LETSENCRYPT_HOST
+      - LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
     volumes:
       - ./dist:/app
-
+    
 networks:
-  nginx_net:
-    external: true
+  default:
+    external:
+      name: nginx-proxy
