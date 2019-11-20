@@ -157,11 +157,11 @@ export default {
   data() {
     return {
       props: {
-        maxKeyLength: true,
+        maxKeyLength: false,
         plus: false,
         quotes: false,
         bracets: false,
-        cluster: true,
+        cluster: false,
         clusterCount: 200,
         headers: [35, 30, 0],
         match_words: true
@@ -194,7 +194,7 @@ export default {
     ...mapState(["columns"])
   },
   created() {
-    this.$store.commit("SETUP_EXAMPLE");
+    // this.$store.commit("SETUP_EXAMPLE");
   },
   methods: {
     copyTable: function(e, id) {
