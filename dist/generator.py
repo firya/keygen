@@ -30,6 +30,7 @@ class Generator:
         result = {}
 
         if self.props['cluster']:
+            self.get_priority_list()
             result = self.groups_to_table(self.clusterisation(cartesian))
         else:
             keywords = []
@@ -46,7 +47,7 @@ class Generator:
 
         return result
 
-    def clusterisation(self, cartesian, h1_len=None, num_headers=1):
+    def clusterisation(self, cartesian, h1_len=None, num_headers=1, iteration=0):
         max_cluster_count = self.props['clusterCount'] if self.props['clusterCount'] else self.cartesian_max
 
         if h1_len is None:
@@ -56,8 +57,6 @@ class Generator:
 
         groups = []
         default_group = []
-
-        self.get_priority_list()
 
         for i, el in enumerate(cartesian):
             if self.count_length(el) <= self.props['headers'][0]:
@@ -76,8 +75,8 @@ class Generator:
                     group_n = len(groups)
                     
                     # Перегенерировать кластеры с меньшей длиной первого заголовка
-                    if group_n >= max_cluster_count - 1 and i != len(cartesian) - 1 and num_headers == 1:
-                        return self.clusterisation(cartesian, h1_len - 1)
+                    if group_n >= max_cluster_count - 1 and i != len(cartesian) - 1 and num_headers == 1 and h1_len > 10 and iteration < 10:
+                        return self.clusterisation(cartesian, h1_len - round(self.props['headers'][0]/2/10), num_headers, iteration + 1)
 
                 if group_n >= len(groups):
                         groups.insert(group_n, [])
@@ -234,7 +233,7 @@ class Generator:
             header_matched = self.match_words(header)
             header_len = self.count_length(header_matched)
 
-            if header_len > max_length:
+            if header_len > max_length and max_length > 0:
                 self.generate_header(words, priority, max_length - 1, exclude)
 
         return header

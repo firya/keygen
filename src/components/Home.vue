@@ -87,7 +87,14 @@
         </div>
       </div>
     </div>
-    <p v-bind:class="{ error: isCartesianLimit }">Число фраз: {{cartesianSum}}/{{cartesianLimit}}</p>
+    <p
+      v-if="props.cluster"
+      v-bind:class="{ error: isClusterLimit }"
+    >Число фраз: {{cartesianSum}}/{{clusterLimit}}</p>
+    <p
+      v-else
+      v-bind:class="{ error: isCartesianLimit }"
+    >Число фраз: {{cartesianSum}}/{{cartesianLimit}}</p>
     <p>
       <button
         class="button button--rounded button--pink"
@@ -150,16 +157,17 @@ export default {
   data() {
     return {
       props: {
-        maxKeyLength: false,
+        maxKeyLength: true,
         plus: false,
         quotes: false,
         bracets: false,
-        cluster: false,
+        cluster: true,
         clusterCount: 200,
         headers: [35, 30, 0],
         match_words: true
       },
       cartesianLimit: 100000,
+      clusterLimit: 20000,
       accordeonOpen: true,
       popup: null,
       loading: false,
@@ -180,10 +188,13 @@ export default {
     isCartesianLimit: function() {
       return this.cartesianSum > this.cartesianLimit;
     },
+    isClusterLimit: function() {
+      return this.cartesianSum > this.clusterLimit;
+    },
     ...mapState(["columns"])
   },
   created() {
-    // this.$store.commit("SETUP_EXAMPLE");
+    this.$store.commit("SETUP_EXAMPLE");
   },
   methods: {
     copyTable: function(e, id) {
@@ -257,7 +268,13 @@ export default {
     },
     generate: function(e) {
       e.preventDefault();
-      if (this.isCartesianLimit) {
+      if (this.props.cluster && this.isClusterLimit) {
+        alert(
+          "Количество сгенерированных слов больше " +
+            this.clusterLimit +
+            " штук"
+        );
+      } else if (this.isCartesianLimit) {
         alert(
           "Количество сгенерированных слов больше " +
             this.cartesianLimit +
@@ -266,8 +283,8 @@ export default {
       } else {
         var that = this;
         if (!this.loading) {
-          this.result = [];
           this.loading = true;
+          this.result = [];
 
           axios
             .post("/api/v1.0/generate", {

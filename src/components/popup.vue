@@ -18,6 +18,11 @@
             <b>Склонение слов в заголовках</b>
           </p>
           <div class="row" v-for="(row, i) in columns[id].decl" v-bind:key="i">
+            <div class="col col--padding">
+              <div v-on:click="removeDeclRow($event, i)" class="row__remove">
+                <Remove />
+              </div>
+            </div>
             <div class="col">
               <label>
                 Если в столбце №
@@ -71,11 +76,13 @@
 import { mapState } from "vuex";
 
 import Cross from "../assets/cross.svg";
+import Remove from "../assets/remove.svg";
 
 export default {
   name: "popup",
   components: {
-    Cross
+    Cross,
+    Remove
   },
   props: {
     id: Number
@@ -101,6 +108,14 @@ export default {
 
       this.$store.commit("ADD_DECL_ROW", {
         column: this.id
+      });
+    },
+    removeDeclRow: function(e, i) {
+      e.preventDefault();
+
+      this.$store.commit("REMOVE_DECL_ROW", {
+        column: this.id,
+        row: i
       });
     },
     changeDecl: function(e, row, prop) {
@@ -175,11 +190,20 @@ export default {
 .row {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px 8px;
+  margin: 0 -4px 8px;
+}
+.row__remove {
+  width: 20px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .col {
-  padding: 0 10px;
+  padding: 0 4px;
+  margin-bottom: 10px;
 
   &:last-child {
     flex: 1;
@@ -187,6 +211,10 @@ export default {
 
   & .input {
     width: 100%;
+  }
+
+  &.col--padding {
+    padding-top: 20px;
   }
 }
 </style>
