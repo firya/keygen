@@ -101,6 +101,13 @@
         v-bind:class="{ loading: loading }"
         v-on:click="generate"
       >Генерировать</button>
+      &nbsp;&nbsp;&nbsp;
+      <a
+        href="#"
+        class="gray small dashed"
+        v-if="result.gen_time"
+        v-on:click="resetResult"
+      >Удалить результат</a>
     </p>
     <div v-if="result.keywords">
       <h2>Рузльтат</h2>
@@ -241,7 +248,6 @@ export default {
       }
     },
     removeColumn: function(column) {
-      console.log(column);
       var isConfirm = confirm("Вы уверены что хотите удалить эту колонку?");
       if (isConfirm) {
         this.$store.commit("REMOVE_COLUMN", column);
@@ -264,6 +270,13 @@ export default {
         this.props.headers = [35, 30, 0];
       } else if (type == "ads") {
         this.props.headers = [30, 30, 30];
+      }
+    },
+    resetResult: function(e) {
+      e.preventDefault();
+      var isConfirm = confirm("Вы уверены что хотите удалить результаты?");
+      if (isConfirm) {
+        this.result = [];
       }
     },
     generate: function(e) {

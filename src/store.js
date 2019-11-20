@@ -42,7 +42,7 @@ export default new Vuex.Store({
     },
     ADD_DECL_ROW: function (state, payload) {
       state.columns[payload.column].decl.push({
-        column: 0,
+        col: 0,
         word: "",
         form: ""
       });
