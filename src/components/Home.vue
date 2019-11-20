@@ -9,7 +9,7 @@
         v-on:click="resetData"
       >Очистить данные</a>
     </p>
-    <div class="x-scroll">
+    <div class="x-scroll columns">
       <div class="x-scroll__column" v-for="(column, index) in columns" v-bind:key="index">
         <Column v-bind:id="index" v-on:openPopup="openPopup" />
       </div>
@@ -419,6 +419,9 @@ export default {
 .textarea {
   width: 100%;
   min-height: 400px;
+}
+.columns {
+  padding: 10px 0;
 }
 .x-scroll {
   overflow-x: auto;

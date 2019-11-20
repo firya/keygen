@@ -31,7 +31,7 @@ export default new Vuex.Store({
       state.columns[payload.id][payload.prop] = payload.value;
     },
     SET_DECL: function (state, payload) {
-      state.columns[payload.column].decl[payload.row][payload.prop] = payload.value;
+      state.columns[payload.col].decl[payload.row][payload.prop] = payload.value;
     },
     ADD_COLUMN: function (state, payload) {
       state.columns.push({
@@ -96,7 +96,7 @@ export default new Vuex.Store({
           data: ["окна"],
           decl: [
             {
-              col: 0,
+              col: 1,
               word: "магазин",
               form: "окон"
             }

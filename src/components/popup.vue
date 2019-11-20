@@ -29,10 +29,10 @@
                 <br />
                 <select
                   class="select"
-                  v-bind:value="row.column+1"
-                  v-on:change="changeDecl($event, (i - 1), 'column')"
+                  v-bind:value="row.col"
+                  v-on:change="changeDecl($event, i, 'col')"
                 >
-                  <option v-for="n in columns.length" v-bind:key="n">{{n}}</option>
+                  <option v-for="n in columns.length" v-bind:key="n" v-bind:value="n-1">{{n}}</option>
                 </select>
               </label>
             </div>
@@ -40,11 +40,13 @@
               <label>
                 Встречается слово
                 <br />
-                <input
-                  class="input"
+                <select
+                  class="select"
                   v-bind:value="row.word"
                   v-on:change="changeDecl($event, i, 'word')"
-                />
+                >
+                  <option v-for="word in columns[columns[id].decl[i].col].data">{{word}}</option>
+                </select>
               </label>
             </div>
             <div class="col">
@@ -114,7 +116,7 @@ export default {
       e.preventDefault();
 
       this.$store.commit("REMOVE_DECL_ROW", {
-        column: this.id,
+        col: this.id,
         row: i
       });
     },
@@ -122,7 +124,7 @@ export default {
       e.preventDefault();
 
       this.$store.commit("SET_DECL", {
-        column: this.id,
+        col: this.id,
         row: row,
         prop: prop,
         value: e.target.value
