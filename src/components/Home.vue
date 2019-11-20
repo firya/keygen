@@ -209,24 +209,28 @@ export default {
 
       var el = document.getElementById(id);
 
-      var target = e.target;
-
       var text = el.innerText ? el.innerText : el.value;
 
-      navigator.clipboard.writeText(text).then(
-        function() {
-          target.classList.add("is-success");
-          setTimeout(function() {
-            target.classList.remove("is-success");
-          }, 1000);
-        },
-        function(err) {
-          target.classList.add("is-error");
-          setTimeout(function() {
-            target.classList.remove("is-error");
-          }, 1000);
-        }
-      );
+      Clipboard.copy(text);
+
+      // var target = e.target;
+
+      // var text = el.innerText ? el.innerText : el.value;
+
+      // navigator.clipboard.writeText(text).then(
+      //   function() {
+      //     target.classList.add("is-success");
+      //     setTimeout(function() {
+      //       target.classList.remove("is-success");
+      //     }, 1000);
+      //   },
+      //   function(err) {
+      //     target.classList.add("is-error");
+      //     setTimeout(function() {
+      //       target.classList.remove("is-error");
+      //     }, 1000);
+      //   }
+      // );
     },
     addColumn: function(e) {
       e.preventDefault();
@@ -316,6 +320,50 @@ export default {
     }
   }
 };
+
+window.Clipboard = (function(window, document, navigator) {
+  var textArea, copy;
+
+  function isOS() {
+    return navigator.userAgent.match(/ipad|iphone/i);
+  }
+
+  function createTextArea(text) {
+    textArea = document.createElement("textArea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+  }
+
+  function selectText() {
+    var range, selection;
+
+    if (isOS()) {
+      range = document.createRange();
+      range.selectNodeContents(textArea);
+      selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      textArea.setSelectionRange(0, 999999);
+    } else {
+      textArea.select();
+    }
+  }
+
+  function copyToClipboard() {
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+  }
+
+  copy = function(text) {
+    createTextArea(text);
+    selectText();
+    copyToClipboard();
+  };
+
+  return {
+    copy: copy
+  };
+})(window, document, navigator);
 </script>
 
 <style>
