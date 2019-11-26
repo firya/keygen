@@ -10,7 +10,12 @@
       </div>
     </div>
     <div class="column__content">
-      <textarea class="textarea" v-bind:value="linedValue" v-on:input="changeData"></textarea>
+      <textarea
+        class="textarea"
+        v-bind:value="linedValue"
+        v-on:input="changeData"
+        v-on:paste="$emit('pasteData', $event)"
+      ></textarea>
     </div>
   </div>
 </template>

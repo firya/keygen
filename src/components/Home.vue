@@ -11,7 +11,7 @@
     </p>
     <div class="x-scroll columns">
       <div class="x-scroll__column" v-for="(column, index) in columns" v-bind:key="index">
-        <Column v-bind:id="index" v-on:openPopup="openPopup" />
+        <Column v-bind:id="index" v-on:openPopup="openPopup" v-on:pasteData="pasteData" />
       </div>
       <div class="x-scroll__add">
         <button class="button button--outline" v-on:click="addColumn">+</button>
@@ -90,11 +90,11 @@
     <p
       v-if="props.cluster"
       v-bind:class="{ error: isClusterLimit }"
-    >Число фраз: {{cartesianSum}}/{{clusterLimit}}</p>
+    >Число фраз: ~{{cartesianSum}}/{{clusterLimit}}</p>
     <p
       v-else
       v-bind:class="{ error: isCartesianLimit }"
-    >Число фраз: {{cartesianSum}}/{{cartesianLimit}}</p>
+    >Число фраз: ~{{cartesianSum}}/{{cartesianLimit}}</p>
     <p>
       <button
         class="button button--rounded button--pink"
@@ -164,17 +164,17 @@ export default {
   data() {
     return {
       props: {
-        maxKeyLength: false,
+        maxKeyLength: true,
         plus: false,
         quotes: false,
         bracets: false,
-        cluster: false,
+        cluster: true,
         clusterCount: 200,
         headers: [35, 30, 0],
         match_words: true
       },
       cartesianLimit: 100000,
-      clusterLimit: 20000,
+      clusterLimit: 100000,
       accordeonOpen: true,
       popup: null,
       loading: false,
@@ -201,7 +201,7 @@ export default {
     ...mapState(["columns"])
   },
   created() {
-    // this.$store.commit("SETUP_EXAMPLE");
+    //this.$store.commit("SETUP_EXAMPLE");
   },
   methods: {
     copyTable: function(e, id) {
@@ -212,25 +212,6 @@ export default {
       var text = el.innerText ? el.innerText : el.value;
 
       Clipboard.copy(text);
-
-      // var target = e.target;
-
-      // var text = el.innerText ? el.innerText : el.value;
-
-      // navigator.clipboard.writeText(text).then(
-      //   function() {
-      //     target.classList.add("is-success");
-      //     setTimeout(function() {
-      //       target.classList.remove("is-success");
-      //     }, 1000);
-      //   },
-      //   function(err) {
-      //     target.classList.add("is-error");
-      //     setTimeout(function() {
-      //       target.classList.remove("is-error");
-      //     }, 1000);
-      //   }
-      // );
     },
     addColumn: function(e) {
       e.preventDefault();
@@ -249,6 +230,20 @@ export default {
       var isConfirm = confirm("Вы уверены что хотите очистит данные?");
       if (isConfirm) {
         this.$store.commit("SETUP_DEFAULT");
+      }
+    },
+    pasteData: function(e) {
+      var data = e.clipboardData.getData("Text");
+
+      if (data.indexOf("\t") != -1) {
+        e.preventDefault();
+
+        var isConfirm = confirm(
+          "Похоже, что вы пытаетесь вставить данные из таблицы, разбить по колонкам?"
+        );
+        if (isConfirm) {
+          this.$store.commit("SETUP_TABLE_DATA", data);
+        }
       }
     },
     removeColumn: function(column) {

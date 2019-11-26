@@ -32,7 +32,9 @@
                   v-bind:value="row.col"
                   v-on:change="changeDecl($event, i, 'col')"
                 >
-                  <option v-for="n in columns.length" v-bind:key="n" v-bind:value="n-1">{{n}}</option>
+                  <template v-for="n in columns.length">
+                    <option v-if="n != (id + 1)" v-bind:key="n" v-bind:value="n-1">{{n}}</option>
+                  </template>
                 </select>
               </label>
             </div>
@@ -109,7 +111,7 @@ export default {
       e.preventDefault();
 
       this.$store.commit("ADD_DECL_ROW", {
-        column: this.id
+        col: this.id
       });
     },
     removeDeclRow: function(e, i) {
@@ -123,11 +125,16 @@ export default {
     changeDecl: function(e, row, prop) {
       e.preventDefault();
 
+      var value = e.target.value;
+      if (prop == "col") {
+        value = parseInt(value, 10);
+      }
+
       this.$store.commit("SET_DECL", {
         col: this.id,
         row: row,
         prop: prop,
-        value: e.target.value
+        value: value
       });
     }
   }

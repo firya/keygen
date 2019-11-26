@@ -41,18 +41,50 @@ export default new Vuex.Store({
       });
     },
     ADD_DECL_ROW: function (state, payload) {
-      state.columns[payload.column].decl.push({
-        col: 0,
+      var default_col = (payload.col == 0) ? 1 : 0;
+      state.columns[payload.col].decl.push({
+        col: default_col,
         word: "",
         form: ""
       });
     },
     REMOVE_DECL_ROW: function (state, payload) {
-      state.columns[payload.column].decl.splice(payload.row, 1);
+      state.columns[payload.col].decl.splice(payload.row, 1);
     },
     REMOVE_COLUMN: function (state, payload) {
-      console.log(payload)
       state.columns.splice(payload, 1);
+    },
+    SETUP_TABLE_DATA: function (state, payload) {
+      var rows = payload.split("\n");
+      var columns = [];
+
+      rows.forEach((row, i) => {
+        var values = row.split("\t");
+
+        values.forEach((value, j) => {
+          if (!columns[j]) {
+            columns[j] = [];
+          }
+
+          if ((value == '' && i == 0) || value != '') {
+            columns[j].push(value);
+          }
+        });
+      });
+
+      if (state.columns.length < columns.length) {
+        for (let i = 0; i < (columns.length - state.columns.length); i++) {
+          state.columns.push({
+            priority: 1.0,
+            data: [""],
+            decl: []
+          });
+        }
+      }
+
+      columns.forEach((item, i) => {
+        state.columns[i].data = item;
+      });
     },
     SETUP_DEFAULT: function (state, payload) {
       state.columns = [
@@ -125,7 +157,7 @@ export default new Vuex.Store({
       //     decl: []
       //   },
       //   {
-      //     priority: 0.8,
+      //     priority: 0.7,
       //     data: ["", "входные", "входные металлические", "металлические", "стальные", "железные"],
       //     decl: [
       //       {
@@ -142,12 +174,12 @@ export default new Vuex.Store({
       //       {
       //         col: 0,
       //         word: "магазин",
-      //         form: "окон"
+      //         form: "дверей"
       //       }
       //     ]
       //   },
       //   {
-      //     priority: 0.7,
+      //     priority: 1.0,
       //     data: [
       //       "в квартиру"
       //     ],
@@ -165,7 +197,7 @@ export default new Vuex.Store({
       //     decl: []
       //   },
       //   {
-      //     priority: 0.9,
+      //     priority: 1.0,
       //     data: [
       //       "",
       //       "Москвоская область",
