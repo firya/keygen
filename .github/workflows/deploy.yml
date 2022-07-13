@@ -18,7 +18,7 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSHKEY }}
           script: |
-            cd zavtratips
+            cd keygen
             git reset --hard origin/main
             git pull origin main
             docker compose stop
