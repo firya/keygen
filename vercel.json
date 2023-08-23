@@ -2,8 +2,11 @@
     "version": 2,
     "builds": [
       {
-        "src": "dist/index.py",
+        "src": "index.py",
         "use": "@vercel/python"
       }
+    ],
+    "rewrites": [
+      { "source": "/(.*)", "destination": "index.py" }
     ]
   }
