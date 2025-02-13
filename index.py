@@ -23,3 +23,7 @@ def get_tasks():
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
+
+if __name__ == '__main__':
+    print("Starting Flask server...")
+    app.run(host='0.0.0.0', port=8000, debug=True)
