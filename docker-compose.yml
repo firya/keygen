@@ -1,0 +1,19 @@
+services:
+  website:
+    build: .
+    container_name: keygen
+    restart: unless-stopped
+    volumes:
+      - ./public:/usr/share/nginx/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keygen.rule=Host(`keygen.maksimlebedev.ru`)"
+      - "traefik.http.routers.keygen.tls=true"
+      - "traefik.http.routers.keygen.tls.certresolver=letsencrypt"
+      - "traefik.http.services.keygen.loadbalancer.server.port=80"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
